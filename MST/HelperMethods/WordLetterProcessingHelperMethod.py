@@ -165,7 +165,8 @@ def decompose_word_into_letters(word):
 
         elif found_flag and each_letter != 'ٔ' and each_letter != 'ٕ':
             #inter_med_list.append(each_letter)
-            inter_med_list[counter] = each_letter
+            if counter < 3:
+                inter_med_list[counter] = each_letter
             counter += 1
 
         elif each_letter == 'ٔ' or each_letter == 'ٕ':

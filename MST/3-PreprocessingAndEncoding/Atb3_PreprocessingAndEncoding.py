@@ -377,7 +377,7 @@ def push_data_into_db(doc, data_chars, list_of_words_and_corresponding_sentence_
              data_chars[x].encoded_input_in_hex_format,
              data_chars[x].encoded_output_in_hex_format,
              data_chars[x].diacritics))
-
+'''
     for each_letter_object in data_chars:
                 cur.execute(
                     "INSERT INTO ParsedDocument("
@@ -394,13 +394,13 @@ def push_data_into_db(doc, data_chars, list_of_words_and_corresponding_sentence_
                     (doc,
                      each_letter_object.undiacritizedCharacter,
                      each_letter_object.diacritizedCharacter,
-                     'training',
+                     'testing',
                      each_letter_object.sentenceNumber,
                      each_letter_object.diacritizedWord,
                      each_letter_object.diacritics,
                      each_letter_object.undiacritizedWord,
                      each_letter_object.location))
-    '''
+
     for each_word in list_of_words_and_corresponding_sentence_number:
         cur.execute(
             "INSERT INTO ListOfWordsAndSentencesInEachDoc(word,SentenceNumber,DocName, wordtype) VALUES (%s,%s,%s,%s)",

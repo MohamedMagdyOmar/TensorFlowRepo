@@ -276,6 +276,94 @@ def fatha_correction_version_2(master_object):
     return master_object
 
 
+def fatha_correction_as_per_paper(master_object):
+    next_next_undiac_char = ''
+    next_next_diac_char = ''
+
+    for current_index in range(0, len(master_object)):
+
+        current_undiac_char = master_object[current_index].undiac_char
+        current_location = master_object[current_index].location_in_word
+        if master_object[current_index].has_next_char:
+            next_undiac_char = master_object[(current_index + 1)].undiac_char
+            next_char_location = master_object[(current_index + 1)].location_in_word
+
+            if master_object[(current_index + 1)].has_next_char:
+                next_next_undiac_char = master_object[(current_index + 2)].undiac_char
+                next_next_diac_char = master_object[(current_index + 2)].rnn_diac_char
+
+            if next_undiac_char in letters_of_fatha_correction:
+
+                if next_undiac_char == u'ة':
+                    master_object[current_index].rnn_diac_char = \
+                        teh_marbota_char_correction(master_object[current_index].rnn_diac_char)
+
+                    master_object[current_index].rnn_diac = \
+                        teh_marbota_char_correction(master_object[current_index].rnn_diac)
+
+                elif next_undiac_char == u'ا':
+
+                    if next_char_location == 'middle':
+                        if current_undiac_char == u'ب':
+                            # , بِاتِّخَاذِكُمُ ,وَبِالْآخِرَةِ , بِالْعُدْوَةِ
+                            if u'ّ' in next_next_diac_char or next_next_diac_char == next_next_undiac_char:
+                                master_object[
+                                    current_index].rnn_diac_char = correct_alef_prev_char_ba2_maksora_version_2(
+                                    master_object[current_index].rnn_diac_char)
+                                master_object[current_index].rnn_diac = correct_alef_prev_char_ba2_maksora_version_2(
+                                    master_object[current_index].rnn_diac)
+
+                            # بَالِغَةٌ , بَاسِرَةٌ
+                            else:
+                                master_object[
+                                    current_index].rnn_diac_char = correct_alef_prev_char_normal_case_version_2(
+                                    master_object[current_index].rnn_diac_char)
+                                master_object[current_index].rnn_diac = correct_alef_prev_char_normal_case_version_2(
+                                    master_object[current_index].rnn_diac)
+
+                        # مِائَةَ , مِائَتَيْنِ
+                        elif current_undiac_char == u'م' \
+                                and current_location == 'first' \
+                                and next_next_diac_char == u'ئَ':
+                            master_object[current_index].rnn_diac_char = correct_alef_prev_char_mem_version_2 \
+                                (master_object[current_index].rnn_diac_char)
+
+                            master_object[current_index].rnn_diac = correct_alef_prev_char_mem_version_2 \
+                                (master_object[current_index].rnn_diac)
+
+                        else:
+                            master_object[
+                                current_index].rnn_diac_char = correct_alef_prev_char_normal_case_version_2(
+                                master_object[
+                                    current_index].rnn_diac_char)
+
+                            master_object[
+                                current_index].rnn_diac = correct_alef_prev_char_normal_case_version_2(master_object[
+                                                                                                           current_index].rnn_diac)
+
+                    else:
+                        master_object[
+                            current_index].rnn_diac_char = correct_alef_prev_char_normal_case_version_2(master_object[
+                                                                                                            current_index].rnn_diac_char)
+
+                        master_object[
+                            current_index].rnn_diac = correct_alef_prev_char_normal_case_version_2(master_object[
+                                                                                                       current_index].rnn_diac)
+
+                elif next_undiac_char == u'ى':
+
+                    if next_char_location == 'last' and master_object[current_index].rnn_diac != u'ً' and \
+                            master_object[current_index].rnn_diac != u'َ':
+                        master_object[
+                            current_index].rnn_diac_char = correct_alef_maksora_prev_char_normal_case_version_2 \
+                            (master_object[current_index].rnn_diac_char)
+
+                        master_object[current_index].rnn_diac = correct_alef_maksora_prev_char_normal_case_version_2 \
+                            (master_object[current_index].rnn_diac)
+
+    return master_object
+
+
 def remove_diacritics(character):
     nkfd_form = unicodedata2.normalize('NFKD', str(character))
     char = u"".join([c for c in nkfd_form if not unicodedata2.combining(c) or c == u'ٓ' or c == u'ٔ' or c == u'ٕ'])
@@ -540,7 +628,6 @@ def correct_alef_maksora_prev_char_tanween_case_version_2(letter):
         comp = unicodedata2.normalize('NFC', overall)
 
     return comp
-
 
 
 def correct_alef_maksora_prev_char_normal_case(prev_char):

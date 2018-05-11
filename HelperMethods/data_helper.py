@@ -251,7 +251,7 @@ def load_nn_input_dataset_string_space_only(data_table):
 
             nn_input.append(one_hot_encoding)
         else:
-            x = 1
+            Exception("Bug Found Here")
 
     end_time = datetime.datetime.now()
 
@@ -319,7 +319,7 @@ def load_nn_labels_dataset_string(data_table):
     nn_labels = []
 
     labels_and_equiv_encoding = get_label_table()
-
+    labels_and_equiv_encoding = labels_and_equiv_encoding[:, [1, 2]]
     for each_row in data_table:
         if each_row[1] != '':
             raw_input_data = each_row[1]
@@ -329,13 +329,47 @@ def load_nn_labels_dataset_string(data_table):
         index_of_raw_label_data = np.where(labels_and_equiv_encoding == raw_input_data)
 
         if np.size(index_of_raw_label_data) != 0:
-            label = labels_and_equiv_encoding[index_of_raw_label_data[0], 2][0]
+            label = labels_and_equiv_encoding[index_of_raw_label_data[0], 1][0]
             label = label.replace('\n', "")
             label = list(map(int, label))
 
             nn_labels.append(label)
         else:
-            x = 1
+            Exception("Bug Here")
+
+    end_time = datetime.datetime.now()
+
+    print("load_nn_labels_dataset_string takes : ", end_time - start_time)
+
+    return np.array(nn_labels)
+
+
+def load_nn_labels_dataset_string_For_ATB(data_table):
+    start_time = datetime.datetime.now()
+    nn_labels = []
+
+    labels_and_equiv_encoding = get_label_table()
+    labels_and_equiv_encoding = labels_and_equiv_encoding[:, [1, 2]]
+    for each_row in data_table:
+        if each_row[1] != '':
+            raw_input_data = each_row[1]
+        else:
+            raw_input_data = each_row[0]
+
+        index_of_raw_label_data = np.where(labels_and_equiv_encoding == raw_input_data)
+
+        if np.size(index_of_raw_label_data) != 0:
+            label = labels_and_equiv_encoding[index_of_raw_label_data[0], 1][0]
+            label = label.replace('\n', "")
+            label = list(map(int, label))
+
+            nn_labels.append(label)
+        else:
+            label = labels_and_equiv_encoding[50, 1]
+            label = label.replace('\n', "")
+            label = list(map(int, label))
+
+            nn_labels.append(label)
 
     end_time = datetime.datetime.now()
 
@@ -361,7 +395,7 @@ def load_nn_labels_dataset_string_2(data_table):
 
             nn_labels.append(label)
         else:
-            x = 1
+            Exception("bug here")
 
     end_time = datetime.datetime.now()
 
@@ -377,11 +411,8 @@ def load_nn_labels_dataset_diacritics_only_string(data_table):
     labels_and_equiv_encoding = get_label_table_diacritics_only()
 
     for each_row in data_table:
-        if each_row[0] != '':
-            raw_input_data = each_row[0]
-        else:
-            raw_input_data = ''
 
+        raw_input_data = each_row[1]
         index_of_raw_label_data = np.where(labels_and_equiv_encoding == raw_input_data)
 
         if np.size(index_of_raw_label_data) != 0:
@@ -450,6 +481,24 @@ def pad_sentences1(x, sent_len, req_char_index, window_size):
     print("pad_sentences takes : ", end_time - start_time)
 
     return padded_sent, vocabulary, vocabulary_inv
+
+
+def pad_sentences2(x, sent_len, req_char_index, window_size):
+    start_time = datetime.datetime.now()
+
+    padded_sent = []
+    start_range = 0
+    end_range = 0
+
+    for each_sent in range(0, len(sent_len)):
+        end_range = sent_len[each_sent] + end_range
+        extracted_sent = x[start_range: end_range]
+        padded_sent.append(padding1(extracted_sent, req_char_index, window_size))
+        start_range = end_range
+
+    end_time = datetime.datetime.now()
+    print("pad_sentences takes : ", end_time - start_time)
+    return padded_sent
 
 
 def build_one_to_one_input_data(x, sent_len, req_char_index, window_size):
@@ -682,7 +731,7 @@ def build_vocab(sentences):
     vocabulary_inv = list(sorted(vocabulary_inv))
 
     # Mapping from char to index
-    vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
+    vocabulary = {x: (i + 1) for i, x in enumerate(vocabulary_inv)}
 
     end_time = datetime.datetime.now()
 
@@ -710,6 +759,11 @@ def build_input_data_for_one_to_one(chars, vocabulary):
 
 def build_input_data2(sentences, vocabulary):
     x = ([[vocabulary[word] for word in sentence] for sentence in sentences])
+    return x
+
+
+def build_input_from_vocab(sentences, vocabulary):
+    x = ([vocabulary[each_char] for each_char in sentences])
     return x
 
 
@@ -741,12 +795,16 @@ def concatenate_char_and_diacritization(ip_letters, nn_labels):
                 if len(list(each_nn_labels)) > 1:
                     nn_diacritized_letters.append(ip_each_letter + each_nn_labels)
 
+                elif each_nn_labels == '':
+                    nn_diacritized_letters.append(ip_each_letter)
+
                 elif not unicodedata2.combining(each_nn_labels):
                     nn_diacritized_letters.append(ip_each_letter)
+
                 else:
                     nn_diacritized_letters.append(ip_each_letter + each_nn_labels)
         except:
-            c = 1
+            Exception("Bug Appeared Here")
 
     return nn_diacritized_letters
 
